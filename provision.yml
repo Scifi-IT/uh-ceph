@@ -43,10 +43,11 @@
   - name: install common packages
     yum: name={{ item }} state=latest
     with_items:
-    - emacs-nox
     - ntp
     - ntpdate
+    - yum-plugin-priorities
     - openssh-server
+    - emacs-nox
     become: true
 
   - name: upgrade all packages
