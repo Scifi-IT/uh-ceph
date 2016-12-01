@@ -1,0 +1,104 @@
+#!/usr/bin/ansible-playbook
+
+---
+# First the common first time thingies for all machines
+
+- hosts: all
+  remote_user: root
+
+  tasks:
+  - name: copy the EPEL gpg key
+    copy: src=RPM-GPG-KEY-EPEL-7 dest=/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 owner=root group=root
+    become: true
+
+  - name: Add EPEL repository
+    yum_repository:
+      name: epel
+      description: EPEL packages
+      baseurl: http://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+      gpgcheck: yes
+      gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+    become: true
+
+  - name: Add Ceph noarch repository
+    yum_repository:
+      name: ceph-noarch
+      description: Ceph noarch packages
+      baseurl: https://download.ceph.com/rpm-kraken/el7/noarch
+      gpgcheck: yes
+      gpgkey: https://download.ceph.com/keys/release.asc
+    become: true
+
+  - name: Add Ceph x86_64 repository
+    yum_repository:
+      name: ceph-x86_64
+      description: Ceph x86_64 packages
+      baseurl: https://download.ceph.com/rpm-kraken/el7/x86_64
+      gpgcheck: yes
+      gpgkey: https://download.ceph.com/keys/release.asc
+    become: true
+
+  - name: install common packages
+    yum: name={{ item }} state=latest
+    with_items:
+    - emacs-nox
+    - ntp
+    - ntpdate
+    - openssh-server
+    become: true
+
+  - name: upgrade all packages
+    yum: name=* state=latest update_cache=yes
+    become: true
+
+# Then more special stuff for groups of machines
+
+- hosts: admin
+  remote_user: root
+
+  tasks:
+  - name: install admin node packages
+    yum: name={{ item }} state=latest
+    with_items:
+    - graphite-web
+    - python-carbon
+    - ceph-deploy
+    become: true
+
+  - name: copy graphite-web config file
+    copy: src=graphite-web.conf dest=/etc/httpd/conf.d/graphite-web.conf
+    become: true
+
+  - name: set graphite-web page and runtime lib directory attributes
+    file: path="{{ item }}" owner=apache group=apache recurse=yes state=directory
+    with_items:
+    - /usr/share/graphite/webapp
+    - /var/lib/graphite-web
+    become: true
+
+  - name: set graphite-web wsgi file attributes
+    file: path=/usr/share/graphite/graphite-web.wsgi owner=apache group=apache state=file
+    become: true
+
+  - name: run graphite setup scripts
+    command: "{{ item }}"
+    with_items:
+    - /usr/bin/graphite-build-index
+    - /usr/bin/graphite-manage syncdb --noinput
+    become: true
+    become_user: apache
+
+  - name: enable httpd
+    service: name=httpd enabled=yes
+    become: true
+
+# And the final common things for all
+
+- hosts: all
+  remote_user: root
+
+  tasks:
+  - name: restart machine
+    command: /sbin/shutdown -r +1 "First reboot"
+    ignore_errors: true
+    become: true
