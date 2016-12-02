@@ -57,6 +57,10 @@
     yum: name=* state=latest update_cache=yes
     become: true
 
+  - name: etc hosts
+    copy: src=etc_hosts dest=/etc/hosts owner=root group=root mode=0644
+    become: true
+
   - name: Adding ceph user called pena
     user: name=pena comment="Pena Penanen"
     become: true
