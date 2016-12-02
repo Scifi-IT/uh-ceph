@@ -61,6 +61,21 @@
     user: name=pena comment="Pena Penanen"
     become: true
 
+  - name: adding pena to sudoers
+    copy: src=pena.sudo dest=/etc/sudoers.d/pena mode=0440 owner=root group=root
+    become: true
+
+  - name: creating pena's .ssh
+    file: dest=/home/pena/.ssh state=directory owner=pena group=pena mode=0700
+    become: true
+    become_user: pena
+    tags: ssh
+
+  - name: copy sshkey script
+    copy: src=authorized_keys.sh dest=/usr/local/sbin/authorized_keys.sh owner=root group=root mode=0755
+    become: true
+    tags: ssh
+
 # Then more special stuff for groups of machines
 
 - hosts: admin
@@ -103,7 +118,31 @@
     service: name=httpd enabled=yes
     become: true
 
-# And the final common things for all
+  - name: Pena's passwordless ssh key
+    command: ssh-keygen -f ~/.ssh/id_rsa -P '' creates=~/.ssh/id_rsa
+    become: true
+    become_user: pena
+    tags: ssh
+
+  - name: fetch Pena's public key(s)
+    command: cat ~/.ssh/id_rsa.pub
+    register: ssh_keys
+    become: true
+    become_user: pena
+    tags: ssh
+
+  - name: check keys
+    debug: msg="{{ ssh_keys.stdout }}"
+    delegate_to: node3
+    tags: ssh
+
+  - name: deploy Pena's key(s) on all nodes
+    command: /usr/local/sbin/authorized_keys.sh "{{ ssh_keys.stdout }}" creates=/home/pena/.ssh/authorized_keys
+    delegate_to: "{{item}}"
+    with_items: "{{groups['nodes']}}"
+    become: true
+    become_user: pena
+    tags: ssh
 
 - hosts: all
   remote_user: root

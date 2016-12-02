@@ -97,7 +97,8 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
       ansible.playbook = "provision.yml"
       ansible.groups = {
         "admin" => ["admin"],
-        "nodes" =>    ["node1", "node2", "node3"]
+        "nodes" =>    ["node3"]
+        #"nodes" =>    ["node1", "node2", "node3"]
       }
     end
   end
