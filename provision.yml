@@ -1,7 +1,9 @@
 #!/usr/bin/ansible-playbook
 
 ---
-# First the common first time thingies for all machines
+#########################################################
+# First the common first time thingies for all machines #
+#########################################################
 
 - hosts: all
   remote_user: root
@@ -83,7 +85,10 @@
     become: true
     tags: ssh
 
-# Then more special stuff for groups of machines
+
+##################################################
+# Then more special stuff for groups of machines #
+##################################################
 
 - hosts: admin
   remote_user: root
@@ -157,11 +162,33 @@
     become_user: "{{ ceph_user }}"
     tags: ssh
 
+  - name: firewalld of admin node
+    firewalld: port=6789/tcp state=enabled permanent=true
+    become: true
+
+- hosts: nodes
+  remote_user: root
+
+  tasks:
+  - name: firewalld of OSD nodes
+    firewalld: port=6800-7300/tcp state=enabled permanent=true
+    become: true
+
+
+##############################################
+# The rest is again common for all machines. #
+##############################################
+
 - hosts: all
   remote_user: root
 
 
   tasks:
+
+  # Enabling firewalld
+  - name: enable firewalld in admin node
+    service: name=firewalld state=started enabled=yes
+    become: true
 
   # Rebooting the cluster after provision configuration.  Without '+1'
   # (ie. one minute delay) ansible gives UNREACHABLE errors, as the
