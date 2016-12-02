@@ -57,6 +57,10 @@
     yum: name=* state=latest update_cache=yes
     become: true
 
+  - name: Adding ceph user called pena
+    user: name=pena comment="Pena Penanen"
+    become: true
+
 # Then more special stuff for groups of machines
 
 - hosts: admin
@@ -97,10 +101,6 @@
 
   - name: enable httpd
     service: name=httpd enabled=yes
-    become: true
-
-  - name: Adding ceph user called pena
-    user: name=pena comment="Pena Penanen"
     become: true
 
 # And the final common things for all
