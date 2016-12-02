@@ -123,7 +123,7 @@
     become: true
 
   - name: admin node ssh config
-    copy: src=admin_ssh_config dest=~/.ssh/config
+    copy: src=admin_ssh_config dest=~/.ssh/config mode=0600
 
   - name: Pena's passwordless ssh key
     command: ssh-keygen -f ~/.ssh/id_rsa -P '' creates=~/.ssh/id_rsa
@@ -131,16 +131,16 @@
     become_user: pena
     tags: ssh
 
+  - name: Copy Pena's private key to default user
+    copy: remote_src=True src=/home/pena/.ssh/id_rsa dest=/home/vagrant/.ssh/id_rsa owner=vagrant group=vagrant mode=0600
+    become: true
+    tags: ssh
+
   - name: fetch Pena's public key(s)
     command: cat ~/.ssh/id_rsa.pub
     register: ssh_keys
     become: true
     become_user: pena
-    tags: ssh
-
-  - name: check keys
-    debug: msg="{{ ssh_keys.stdout }}"
-    delegate_to: node3
     tags: ssh
 
   - name: deploy Pena's key(s) on all nodes
