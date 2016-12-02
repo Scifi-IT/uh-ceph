@@ -100,6 +100,10 @@
     service: name=httpd enabled=yes
     become: true
 
+  - name: Adding ceph user called pena
+    user: name=pena comment="Pena Penanen"
+    become: true
+
 # And the final common things for all
 
 - hosts: all
