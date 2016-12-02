@@ -86,13 +86,12 @@
     file: path=/usr/share/graphite/graphite-web.wsgi owner=apache group=apache state=file
     become: true
 
-  - name: run graphite build index setup scripts
-    command: /usr/bin/graphite-build-index creates="/var/lib/graphite-web/build-index.provisioned"
+  - name: copy graphite-web setup script
+    copy: src=graphite-web-setup.sh dest=/usr/local/sbin/graphite-web-setup.sh owner=root group=root mode=0755
     become: true
-    become_user: apache
 
-  - name: run graphite syncdb setup scripts
-    command: /usr/bin/graphite-manage syncdb --noinput creates="/var/lib/graphite-web/manage_syncdb.provisioned"
+  - name: run graphite-web setup script
+    command: /usr/local/sbin/graphite-web-setup.sh creates="/var/lib/graphite-web/provisioned"
     become: true
     become_user: apache
 
