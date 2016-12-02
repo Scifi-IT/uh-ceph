@@ -1,0 +1,9 @@
+# ceph_user is the user for deploying ceph
+ceph_user: pena
+ceph_user_name: "Pena Penanen"
+
+# default_user is the username defined by the provisioning system (aka Vagrant)
+default_user: vagrant
+
+# authorized_keys script
+authorized_keys_sh: /usr/local/sbin/authorized_keys.sh

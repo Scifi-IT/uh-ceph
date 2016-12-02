@@ -6,6 +6,9 @@
 - hosts: all
   remote_user: root
 
+  vars_files:
+  - vars.yml
+
   tasks:
   - name: copy the EPEL gpg key
     copy: src={{ item }} dest=/etc/pki/rpm-gpg/{{ item }} owner=root group=root
@@ -18,7 +21,7 @@
     yum_repository:
       name: epel
       description: EPEL packages
-      baseurl: http://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+      baseurl: http://download.fedoraproject.org/pub/epel/$releasever/$basearch
       gpgcheck: yes
       gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
     become: true
@@ -61,22 +64,22 @@
     copy: src=etc_hosts dest=/etc/hosts owner=root group=root mode=0644
     become: true
 
-  - name: Adding ceph user called pena
-    user: name=pena comment="Pena Penanen"
+  - name: Adding ceph user
+    user: name="{{ ceph_user }}" comment="{{ceph_user_name}}"
     become: true
 
-  - name: adding pena to sudoers
-    copy: src=pena.sudo dest=/etc/sudoers.d/pena mode=0440 owner=root group=root
+  - name: adding Ceph user to sudoers
+    template: src=ceph_user.sudo.j2 dest=/etc/sudoers.d/"{{ ceph_user }}" mode=0440 owner=root group=root
     become: true
 
-  - name: creating pena's .ssh
-    file: dest=/home/pena/.ssh state=directory owner=pena group=pena mode=0700
+  - name: creating Ceph user's .ssh
+    file: dest=/home/{{ ceph_user }}/.ssh state=directory owner="{{ ceph_user }}" group="{{ ceph_user }}" mode=0700
     become: true
-    become_user: pena
+    become_user: "{{ ceph_user }}"
     tags: ssh
 
   - name: copy sshkey script
-    copy: src=authorized_keys.sh dest=/usr/local/sbin/authorized_keys.sh owner=root group=root mode=0755
+    copy: src=authorized_keys.sh dest="{{ authorized_keys_sh }}" owner=root group=root mode=0755
     become: true
     tags: ssh
 
@@ -84,6 +87,9 @@
 
 - hosts: admin
   remote_user: root
+
+  vars_files:
+  - vars.yml
 
   tasks:
   - name: install admin node packages
@@ -114,7 +120,7 @@
     become: true
 
   - name: run graphite-web setup script
-    command: /usr/local/sbin/graphite-web-setup.sh creates="/var/lib/graphite-web/provisioned"
+    command: creates="/var/lib/graphite-web/provisioned" /usr/local/sbin/graphite-web-setup.sh 
     become: true
     become_user: apache
 
@@ -122,40 +128,46 @@
     service: name=httpd enabled=yes
     become: true
 
-  - name: admin node ssh config
-    copy: src=admin_ssh_config dest=~/.ssh/config mode=0600
+  - name: admin node ssh config for default user
+    template: src=admin_ssh_config.j2 dest=~/.ssh/config mode=0600
 
-  - name: Pena's passwordless ssh key
-    command: ssh-keygen -f ~/.ssh/id_rsa -P '' creates=~/.ssh/id_rsa
+  - name: Ceph user's passwordless ssh key
+    command: creates=~/.ssh/id_rsa ssh-keygen -f ~/.ssh/id_rsa -P '' 
     become: true
-    become_user: pena
+    become_user: "{{ ceph_user }}"
     tags: ssh
 
-  - name: Copy Pena's private key to default user
-    copy: remote_src=True src=/home/pena/.ssh/id_rsa dest=/home/vagrant/.ssh/id_rsa owner=vagrant group=vagrant mode=0600
+  - name: Copy Ceph user's private key to the default user
+    copy: remote_src=True src=/home/{{ ceph_user }}/.ssh/id_rsa dest=/home/{{ default_user }}/.ssh/id_rsa owner={{ default_user }} group={{ default_user }} mode=0600
     become: true
     tags: ssh
 
-  - name: fetch Pena's public key(s)
+  - name: fetch Ceph user's public key(s)
     command: cat ~/.ssh/id_rsa.pub
     register: ssh_keys
     become: true
-    become_user: pena
+    become_user: "{{ ceph_user }}"
     tags: ssh
 
-  - name: deploy Pena's key(s) on all nodes
-    command: /usr/local/sbin/authorized_keys.sh "{{ ssh_keys.stdout }}" creates=/home/pena/.ssh/authorized_keys
+  - name: deploy Ceph user's key(s) on all nodes
+    command: creates=/home/{{ ceph_user }}/.ssh/authorized_keys "{{ authorized_keys_sh }}" "{{ ssh_keys.stdout }}" 
     delegate_to: "{{item}}"
     with_items: "{{groups['nodes']}}"
     become: true
-    become_user: pena
+    become_user: "{{ ceph_user }}"
     tags: ssh
 
 - hosts: all
   remote_user: root
 
+
   tasks:
+
+  # Rebooting the cluster after provision configuration.  Without '+1'
+  # (ie. one minute delay) ansible gives UNREACHABLE errors, as the
+  # system shuts down before the playbook ends.  Without --no-wall
+  # flag shutdown will send terminal messages, which ansible will not
+  # comprehend.
   - name: restart machine
-    command: /sbin/shutdown -r +1 "First reboot"
-    ignore_errors: true
+    command: /sbin/shutdown -r +1 --no-wall "First reboot"
     become: true
