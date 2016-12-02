@@ -8,7 +8,10 @@
 
   tasks:
   - name: copy the EPEL gpg key
-    copy: src=RPM-GPG-KEY-EPEL-7 dest=/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7 owner=root group=root
+    copy: src={{ item }} dest=/etc/pki/rpm-gpg/{{ item }} owner=root group=root
+    with_items:
+    - RPM-GPG-KEY-EPEL-7
+    - CEPH-KEY
     become: true
 
   - name: Add EPEL repository
@@ -27,7 +30,7 @@
       baseurl: https://download.ceph.com/rpm-kraken/el7/noarch
       priority: 2
       gpgcheck: yes
-      gpgkey: https://download.ceph.com/keys/release.asc
+      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
     become: true
 
   - name: Add Ceph binary repository
@@ -37,7 +40,7 @@
       baseurl: https://download.ceph.com/rpm-kraken/el7/$basearch
       priority: 2
       gpgcheck: yes
-      gpgkey: https://download.ceph.com/keys/release.asc
+      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
     become: true
 
   - name: install common packages
@@ -83,11 +86,13 @@
     file: path=/usr/share/graphite/graphite-web.wsgi owner=apache group=apache state=file
     become: true
 
-  - name: run graphite setup scripts
-    command: "{{ item }}"
-    with_items:
-    - /usr/bin/graphite-build-index
-    - /usr/bin/graphite-manage syncdb --noinput
+  - name: run graphite build index setup scripts
+    command: /usr/bin/graphite-build-index creates="/var/lib/graphite-web/build-index.provisioned"
+    become: true
+    become_user: apache
+
+  - name: run graphite syncdb setup scripts
+    command: /usr/bin/graphite-manage syncdb --noinput creates="/var/lib/graphite-web/manage_syncdb.provisioned"
     become: true
     become_user: apache
 
