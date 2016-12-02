@@ -122,6 +122,9 @@
     service: name=httpd enabled=yes
     become: true
 
+  - name: admin node ssh config
+    copy: src=admin_ssh_config dest=~/.ssh/config
+
   - name: Pena's passwordless ssh key
     command: ssh-keygen -f ~/.ssh/id_rsa -P '' creates=~/.ssh/id_rsa
     become: true

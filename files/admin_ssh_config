@@ -1,0 +1,9 @@
+Host node1
+   Hostname node1
+   User pena
+Host node2
+   Hostname node2
+   User pena
+Host node3
+   Hostname node3
+   User pena
