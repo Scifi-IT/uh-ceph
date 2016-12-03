@@ -72,23 +72,15 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
   config.vm.define "admin" do |admin|
     admin.vm.box = "centos/7"
     admin.vm.network "private_network", ip: "192.168.33.10"
-  #  admin.vm.provision "ansible" do |ansible|
-  #    ansible.limit = 'all'
-  #    ansible.playbook = "provision.yml"
-  #    ansible.groups = {
-  #      "admin" => ["admin"],
-  #      "nodes" =>    ["node1", "node2", "node3"]
-  #    }
-  #  end
   end
-  #config.vm.define "node1" do |node1|
-  #  node1.vm.box = "centos/7"
-  #  node1.vm.network "private_network", ip: "192.168.33.11"
-  #end
-  #config.vm.define "node2" do |node2|
-  #  node2.vm.box = "centos/7"
-  #  node2.vm.network "private_network", ip: "192.168.33.12"
-  #end
+  config.vm.define "node1" do |node1|
+    node1.vm.box = "centos/7"
+    node1.vm.network "private_network", ip: "192.168.33.11"
+  end
+  config.vm.define "node2" do |node2|
+    node2.vm.box = "centos/7"
+    node2.vm.network "private_network", ip: "192.168.33.12"
+  end
   config.vm.define "node3" do |node3|
     node3.vm.box = "centos/7"
     node3.vm.network "private_network", ip: "192.168.33.13"
@@ -97,8 +89,7 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
       ansible.playbook = "provision.yml"
       ansible.groups = {
         "admin" => ["admin"],
-        "nodes" =>    ["node3"]
-        #"nodes" =>    ["node1", "node2", "node3"]
+        "nodes" =>    ["node1", "node2", "node3"]
       }
     end
   end
