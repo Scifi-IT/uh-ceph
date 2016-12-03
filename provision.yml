@@ -17,12 +17,18 @@
     service: name=firewalld state=started enabled=yes
     become: true
 
-  - name: copy the EPEL gpg key
+  - name: copy the repository gpg keys
     copy: src={{ item }} dest=/etc/pki/rpm-gpg/{{ item }} owner=root group=root
     with_items:
     - RPM-GPG-KEY-EPEL-7
     - CEPH-KEY
     become: true
+    tags: repos
+
+  - name: copy Ceph repository file
+    copy: src=ceph.repo dest=/etc/yum.repos.d/ceph.repo owner=root group=root seuser=system_u serole=object_r setype=system_conf_t selevel=s0
+    become: true
+    tags: repos
 
   - name: Add EPEL repository
     yum_repository:
@@ -32,26 +38,27 @@
       gpgcheck: yes
       gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
     become: true
+    tags: repos
 
-  - name: Add Ceph noarch repository
-    yum_repository:
-      name: ceph-noarch
-      description: Ceph noarch packages
-      baseurl: https://download.ceph.com/rpm-kraken/el7/noarch
-      priority: 2
-      gpgcheck: yes
-      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
-    become: true
-
-  - name: Add Ceph binary repository
-    yum_repository:
-      name: ceph
-      description: Ceph packages for $basearch
-      baseurl: https://download.ceph.com/rpm-kraken/el7/$basearch
-      priority: 2
-      gpgcheck: yes
-      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
-    become: true
+#  - name: Add Ceph noarch repository
+#    yum_repository:
+#      name: Ceph-noarch
+#      description: Ceph noarch packages
+#      baseurl: https://download.ceph.com/rpm-kraken/el7/noarch
+#      priority: 2
+#      gpgcheck: yes
+#      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
+#    become: true
+#
+#  - name: Add Ceph binary repository
+#    yum_repository:
+#      name: Ceph
+#      description: Ceph packages for $basearch
+#      baseurl: https://download.ceph.com/rpm-kraken/el7/$basearch
+#      priority: 2
+#      gpgcheck: yes
+#      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
+#    become: true
 
   - name: install common packages
     yum: name={{ item }} state=latest
