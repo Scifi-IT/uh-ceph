@@ -90,6 +90,15 @@
     become: true
     tags: ssh
 
+  - name: SEconfig disable
+    copy: src=se_config dest=/etc/selinux/config owner=root group=root mode=0644 seuser=system_u serole=object_r setype=selinux_config_t selevel=s0
+    become: true
+    tags: selinux
+
+  - name: SEconfig permissive
+    selinux: state=disabled
+    become: true
+    tags: selinux
 
 ##################################################
 # Then more special stuff for groups of machines #
