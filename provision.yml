@@ -40,26 +40,6 @@
     become: true
     tags: repos
 
-#  - name: Add Ceph noarch repository
-#    yum_repository:
-#      name: Ceph-noarch
-#      description: Ceph noarch packages
-#      baseurl: https://download.ceph.com/rpm-kraken/el7/noarch
-#      priority: 2
-#      gpgcheck: yes
-#      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
-#    become: true
-#
-#  - name: Add Ceph binary repository
-#    yum_repository:
-#      name: Ceph
-#      description: Ceph packages for $basearch
-#      baseurl: https://download.ceph.com/rpm-kraken/el7/$basearch
-#      priority: 2
-#      gpgcheck: yes
-#      gpgkey: file:///etc/pki/rpm-gpg/CEPH-KEY
-#    become: true
-
   - name: install common packages
     yum: name={{ item }} state=latest
     with_items:
