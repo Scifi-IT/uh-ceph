@@ -12,6 +12,11 @@
   - vars.yml
 
   tasks:
+  # Enabling firewalld
+  - name: enable firewalld
+    service: name=firewalld state=started enabled=yes
+    become: true
+
   - name: copy the EPEL gpg key
     copy: src={{ item }} dest=/etc/pki/rpm-gpg/{{ item }} owner=root group=root
     with_items:
@@ -97,6 +102,7 @@
   - vars.yml
 
   tasks:
+
   - name: install admin node packages
     yum: name={{ item }} state=latest
     with_items:
@@ -184,11 +190,6 @@
 
 
   tasks:
-
-  # Enabling firewalld
-  - name: enable firewalld in admin node
-    service: name=firewalld state=started enabled=yes
-    become: true
 
   # Rebooting the cluster after provision configuration.  Without '+1'
   # (ie. one minute delay) ansible gives UNREACHABLE errors, as the
