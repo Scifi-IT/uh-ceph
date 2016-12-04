@@ -12,10 +12,10 @@
   - vars.yml
 
   tasks:
-  # Enabling firewalld
-  - name: enable firewalld
-    service: name=firewalld state=started enabled=yes
-    become: true
+#  # Enabling firewalld
+#  - name: enable firewalld
+#    service: name=firewalld state=started enabled=yes
+#    become: true
 
   - name: copy the repository gpg keys
     copy: src={{ item }} dest=/etc/pki/rpm-gpg/{{ item }} owner=root group=root
@@ -164,17 +164,17 @@
     become_user: "{{ ceph_user }}"
     tags: ssh
 
-  - name: firewalld of admin node
-    firewalld: port=6789/tcp state=enabled permanent=true
-    become: true
+#  - name: firewalld of admin node
+#    firewalld: port=6789/tcp state=enabled permanent=true
+#    become: true
 
-- hosts: nodes
-  remote_user: root
-
-  tasks:
-  - name: firewalld of OSD nodes
-    firewalld: port=6800-7300/tcp state=enabled permanent=true
-    become: true
+#- hosts: nodes
+#  remote_user: root
+#
+#  tasks:
+#  - name: firewalld of OSD nodes
+#    firewalld: port=6800-7300/tcp state=enabled permanent=true
+#    become: true
 
 
 ##############################################
