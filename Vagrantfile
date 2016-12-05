@@ -73,6 +73,10 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
     admin.vm.box = "centos/7"
     admin.vm.network "private_network", ip: "192.168.33.10"
   end
+  config.vm.define "client" do |admin|
+    admin.vm.box = "centos/7"
+    admin.vm.network "private_network", ip: "192.168.33.100"
+  end
   config.vm.define "node1" do |node1|
     node1.vm.box = "centos/7"
     node1.vm.network "private_network", ip: "192.168.33.11"
@@ -89,6 +93,7 @@ Vagrant.configure(VAGRANT_API_VERSION) do |config|
       ansible.playbook = "provision.yml"
       ansible.groups = {
         "admin" => ["admin"],
+        "clients" => ["client"],
         "nodes" =>    ["node1", "node2", "node3"]
       }
     end
