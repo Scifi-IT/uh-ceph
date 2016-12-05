@@ -159,7 +159,7 @@
   - name: deploy Ceph user's key(s) on all nodes
     command: creates=/home/{{ ceph_user }}/.ssh/authorized_keys "{{ authorized_keys_sh }}" "{{ ssh_keys.stdout }}" 
     delegate_to: "{{item}}"
-    with_items: "{{groups['nodes']}}"
+    with_items: [ "{{groups['nodes']}}", "{{groups['clients']}}" ]
     become: true
     become_user: "{{ ceph_user }}"
     tags: ssh
