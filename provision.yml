@@ -201,7 +201,7 @@
     tags: ceph-deploy
 
   - name: copy ceph-deploy scripts
-    copy: dest=/home/{{ ceph_user }}/bin/ceph-deploy.sh src=ceph-deploy.sh mode=0755
+    copy: dest=/home/{{ ceph_user }}/bin/{{cluster_deploy_sh}} src={{cluster_deploy_sh}} mode=0755
     become: true
     become_user: "{{ ceph_user }}"
     tags: ceph-deploy
@@ -227,7 +227,31 @@
 
   tasks:
   - name: The CEPH deploy script
-    command: creates=/home/{{ceph_user}}/my-cluster/ceph.conf /home/{{ceph_user}}/bin/ceph-deploy.sh 
+    command: creates=/home/{{ceph_user}}/my-cluster/ceph.conf /home/{{ceph_user}}/bin/{{cluster_deploy_sh}} 
     become: true
     become_user: "{{ ceph_user }}"
     tags: ceph-deploy
+
+- hosts: client
+  remote_user: root
+
+  vars_files:
+  - vars.yml
+
+  tasks:
+  - name: client dirs
+    file: path=/home/{{ceph_user}}/bin state=directory
+    become: true
+    become_user: "{{ceph_user}}"
+    tags: client
+
+  - name: copy client RBD script
+    copy: dest=/home/{{ceph_user}}/bin/client.sh src=client.sh mode=0755 owner={{ceph_user}} group={{ceph_user}}
+    become: true
+    tags: client
+
+  - name: Run client RBD script
+    command: creates=/mnt/ceph-block-device /home/{{ceph_user}}/bin/client.sh
+    become: true
+    become_user: "{{ceph_user}}"
+    tags: client

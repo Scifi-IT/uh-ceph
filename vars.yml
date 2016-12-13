@@ -7,3 +7,6 @@ default_user: vagrant
 
 # authorized_keys script
 authorized_keys_sh: /usr/local/sbin/authorized_keys.sh
+
+# deployment script
+cluster_deploy_sh: cluster-deploy.sh

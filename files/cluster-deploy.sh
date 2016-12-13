@@ -88,6 +88,19 @@ echo "#         ceph-deploy mon add node2           #" >> $DEPLOY_LOG
 echo "###############################################" >> $DEPLOY_LOG
 ceph-deploy mon add node3
 
+date >> $DEPLOY_LOG
+echo "###############################################" >> $DEPLOY_LOG
+echo "# ceph-deploy install client                  #"
+echo "###############################################" >> $DEPLOY_LOG
+ceph-deploy install client
+
+echo >> $DEPLOY_LOG
+date >> $DEPLOY_LOG
+echo "###############################################" >> $DEPLOY_LOG
+echo "# ceph-deploy admin client                    #"
+echo "###############################################" >> $DEPLOY_LOG
+ceph-deploy admin client
+
 echo >> $DEPLOY_LOG
 date >> $DEPLOY_LOG
 exit 0
