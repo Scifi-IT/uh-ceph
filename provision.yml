@@ -172,11 +172,29 @@
     tags: ssh
 
   - name: get host keys by login once into every node.
-    command: ssh -o StrictHostKeyChecking=no "{{item}}" exit
+    command: creates=/home/{{ceph_user}}/.ssh/known_hosts ssh -o StrictHostKeyChecking=no "{{item}}" exit
     with_items: "{{groups['all']}}"
     become: true
     become_user: "{{ ceph_user }}"
     tags: ssh
+
+  - name: create conf dirs for deployment
+    file: path={{item}} state=directory
+    with_items:
+      - /home/"{{ ceph_user }}"/my-cluster
+      - /home/"{{ ceph_user }}"/bin
+    become: true
+    become_user: "{{ ceph_user }}"
+    tags: ceph-deploy
+
+  - name: copy ceph-deploy scripts
+    file: dest=/home/"{{ ceph_user }}"/bin/"{{item}}" src="{{item}}" mode=0755
+    with_items:
+      - ceph-deploy1.sh
+      - ceph-deploy2.sh
+    become: true
+    become_user: "{{ ceph_user }}"
+    tags: ceph-deploy
 
 #    with_items: [ "{{groups['nodes']}}", "{{groups['clients']}}" ]
 #  - name: firewalld of admin node
@@ -190,6 +208,51 @@
 #  - name: firewalld of OSD nodes
 #    firewalld: port=6800-7300/tcp state=enabled permanent=true
 #    become: true
+
+- hosts: admin
+  remote_user: "{{ ceph_user }}"
+
+  tasks:
+  - name: First ceph deploy script
+    command: /home/"{{ceph_user}}"/bin/ceph-deploy1.sh creates=/home/{{ceph_user}}/my-cluster/ceph.conf
+    become: true
+    tags: ceph-deploy
+
+- hosts: node1
+  remote_user: root
+
+  tasks:
+  - name: osd0 dir
+    file: path=/var/local/osd0 owner=ceph group=ceph seuser=system_u serole=object_r setype=var_t selevel=s0
+    become: true
+    tags: ceph-deploy
+
+- hosts: node2
+  remote_user: root
+
+  tasks:
+  - name: osd1 dir
+    file: path=/var/local/osd1 owner=ceph group=ceph seuser=system_u serole=object_r setype=var_t selevel=s0
+    become: true
+    tags: ceph-deploy
+
+- hosts: node2
+  remote_user: root
+
+  tasks:
+  - name: osd2 dir
+    file: path=/var/local/osd2 owner=ceph group=ceph seuser=system_u serole=object_r setype=var_t selevel=s0
+    become: true
+    tags: ceph-deploy
+
+- hosts: admin
+  remote_user: "{{ ceph_user }}"
+
+  tasks:
+  - name: Second ceph deploy script
+    command: /home/"{{ceph_user}}"/bin/ceph-deploy2.sh creates=/home/{{ceph_user}}/my-cluster/ceph.conf
+    become: true
+    tags: ceph-deploy
 
 
 ##############################################
