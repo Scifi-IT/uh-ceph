@@ -48,6 +48,13 @@
     - yum-plugin-priorities
     - openssh-server
     - emacs-nox
+    - snappy
+    - leveldb
+    - gdisk
+    - python-argparse
+    - gperftools-libs
+    - bind-utils
+    - ceph
     become: true
 
   - name: upgrade all packages
@@ -159,11 +166,12 @@
   - name: deploy Ceph user's key(s) on all nodes
     command: creates=/home/{{ ceph_user }}/.ssh/authorized_keys "{{ authorized_keys_sh }}" "{{ ssh_keys.stdout }}" 
     delegate_to: "{{item}}"
-    with_items: [ "{{groups['nodes']}}", "{{groups['clients']}}" ]
+    with_items: "{{groups['all']}}"
     become: true
     become_user: "{{ ceph_user }}"
     tags: ssh
 
+#    with_items: [ "{{groups['nodes']}}", "{{groups['clients']}}" ]
 #  - name: firewalld of admin node
 #    firewalld: port=6789/tcp state=enabled permanent=true
 #    become: true
