@@ -171,6 +171,13 @@
     become_user: "{{ ceph_user }}"
     tags: ssh
 
+  - name: get host keys by login once into every node.
+    command: ssh -o StrictHostKeyChecking=no "{{item}}" exit
+    with_items: "{{groups['all']}}"
+    become: true
+    become_user: "{{ ceph_user }}"
+    tags: ssh
+
 #    with_items: [ "{{groups['nodes']}}", "{{groups['clients']}}" ]
 #  - name: firewalld of admin node
 #    firewalld: port=6789/tcp state=enabled permanent=true
