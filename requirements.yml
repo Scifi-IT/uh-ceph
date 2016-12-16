@@ -1,0 +1,3 @@
+---
+- src: https://github.com/pdellaert/dhcp_server
+  version: 1bdb4108d0ec012af0f6c60015149d4d7ab58f72
