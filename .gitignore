@@ -1,3 +1,5 @@
 .vagrant
 provision.retry
-roles/pdellaert.dhcp_server
+roles/dhcp_server
+roles/pxe_bootstrap
+roles/pxe_config

@@ -1,3 +1,11 @@
 ---
 - src: https://github.com/pdellaert/dhcp_server
   version: 1bdb4108d0ec012af0f6c60015149d4d7ab58f72
+
+- src: https://github.com/CSC-IT-Center-for-Science/ansible-role-pxe_bootstrap
+  version: v1.4.0
+  name: pxe_bootstrap
+
+- src: https://github.com/CSC-IT-Center-for-Science/ansible-role-pxe_config
+  version: v1.4.3
+  name: pxe_config
